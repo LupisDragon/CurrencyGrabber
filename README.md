@@ -6,3 +6,5 @@ License: This code was created on commission for an individual, and thus should 
 What it does: The grabber connects to BitFinex's API and basically acts as a stock ticker (to be used later on).<br>
 V2 edits adds an updated API change<br>
 V2e makes changes to alterations made by the end user, such as writing to file, and adding candlewidths.
+
+I HIGHLY recommend using or strarting from the V2 branch.
