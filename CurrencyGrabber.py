@@ -1,6 +1,7 @@
 '''
 This program grabs data from bitfinex's ticker, displays the data, and refreshes every minute.
 Written by Ian Schwartz
+Modified to grab price candles by E. A.   3/12/21
 '''
 import os
 import sys
@@ -12,116 +13,67 @@ import requests
 NOTE: As is, this program uses the public API. For actual trading, it would
 need to use the Authenticated API, which is beyond the scope of this program.
 '''
+candlewidth=["1m","5m","15m","30m","1h","3h","4h","6h","12h"]
 
-url = "https://api.bitfinex.com/v2/ticker/tBTCUSD/"
+for k in candlewidth: #goes through each value in the list 'candlewidth' and assigns it to k
+    url = "https://api.bitfinex.com/v2/candles/trade:"
+    url += k
+    url += ":tBTCUSD/hist"
+    #url = "https://api.bitfinex.com/v2/candles/trade:1m:tBTCUSD/hist"
+    #url = "https://api.bitfinex.com/v2/ticker/tBTCUSD/"
 
-response = requests.request("GET", url) #Get the data
-txt = response.text #We're only interested in the text area of the response (returns as string type)
-jtxt = json.loads(txt) #convert into an array of strings
-
-'''
-jtxt now looks like:
-[47527, 9.49607463, 47528, 16.426778170000002, -661, -0.0137, 47528, 10274.45975602, 48583, 45851.95356552]
-
-According to the documentation, it goes:
-BID, BID_SIZE, ASK, ASK_SIZE, DAILY_CHANGE, DAILY_CHANGE_RELATIVE, LAST_PRICE, VOLUME, HIGH, LOW
-'''
-
-BID = jtxt[0]
-BID_SIZE = jtxt[1]
-ASK = jtxt[2]
-ASK_SIZE = jtxt[3]
-DAILY_CHANGE = jtxt[4]
-DAILY_CHANGE_RELATIVE = jtxt[5]
-LAST_PRICE = jtxt[6]
-VOLUME = jtxt[7]
-HIGH = jtxt[8]
-LOW = jtxt[9]
-
-#Print the initial data to console
-print("Current Data of BTC to USD\n" +
-    "\nBid:\t\t\t" + str(BID) + 
-    "\nBid Size:\t\t" + str(BID_SIZE) +
-    "\nAsk:\t\t\t" + str(ASK) +
-    "\nAsk Size:\t\t" + str(ASK_SIZE) +
-    "\nDaily Change:\t\t" + str(DAILY_CHANGE) + 
-    "\nDaily Change Relative:\t" + str(DAILY_CHANGE_RELATIVE) + 
-    "\nLast Price:\t\t" + str(LAST_PRICE) +
-    "\nVolume:\t\t\t" + str(VOLUME) + 
-    "\nHigh:\t\t\t" + str(HIGH) + 
-    "\nLow:\t\t\t" + str(LOW) + 
-    "\n"
-    )
-
-currenttime = time.localtime()
-lasttime = currenttime #lasttime represents the last time the data was updated
-hr = lasttime.tm_hour #for AM/PM display purposes. Otherwise, generally useless.
-minute = lasttime.tm_min #this makes it easier to see when the data needs refreshing
-ender = "" # 0(midnight) - 11: AM, 12-23: PM
-
-#For display purposes, is it AM or PM?
-if (hr > 12):
-    ender = "PM"
-    hr -= 12
-elif (hr == 12):
-    ender = "PM"
-else:
-    ender = "AM"
-
-#For display purposes, do we need to add a leading zero to the minute? (needed when minute is 0-9)
-if (minute < 10):
-    print("Last Update: " + str(hr) + ":0" + str(lasttime.tm_min) + " " + ender)
-else:
-    print("Last Update: " + str(hr) + ":" + str(lasttime.tm_min) + " " + ender)
-
-while True:
-    currenttime = time.localtime()
-    minute = currenttime.tm_min
+    response = requests.request("GET", url) #Get the data
+    txt = response.text #We're only interested in the text area of the response (returns as string type)
+    jtxt = json.loads(txt) #convert into an array of strings
     
-    if ((currenttime.tm_min > lasttime.tm_min) or (currenttime.tm_min == 0 and lasttime.tm_min == 59)): #data needs updating
-        response = requests.request("GET", url)
-        txt = response.text
-        jtxt = json.loads(txt)
-        
-        BID = jtxt[0]
-        BID_SIZE = jtxt[1]
-        ASK = jtxt[2]
-        ASK_SIZE = jtxt[3]
-        DAILY_CHANGE = jtxt[4]
-        DAILY_CHANGE_RELATIVE = jtxt[5]
-        LAST_PRICE = jtxt[6]
-        VOLUME = jtxt[7]
-        HIGH = jtxt[8]
-        LOW = jtxt[9]
+    '''
+    jtxt now looks like:
 
-        #Print the initial data to console
-        print("Current Data of BTC to USD\n" +
-            "\nBid:\t\t\t" + str(BID) + 
-            "\nBid Size:\t\t" + str(BID_SIZE) +
-            "\nAsk:\t\t\t" + str(ASK) +
-            "\nAsk Size:\t\t" + str(ASK_SIZE) +
-            "\nDaily Change:\t\t" + str(DAILY_CHANGE) + 
-            "\nDaily Change Relative:\t" + str(DAILY_CHANGE_RELATIVE) + 
-            "\nLast Price:\t\t" + str(LAST_PRICE) +
-            "\nVolume:\t\t\t" + str(VOLUME) + 
-            "\nHigh:\t\t\t" + str(HIGH) + 
-            "\nLow:\t\t\t" + str(LOW) + 
-            "\n"
-            )
-        
-        lasttime = currenttime
-        hr = currenttime.tm_hour
+    [1615561200000,56226,56477,56552,56052,128.22140116],
+    [1615557600000,55733,56226,56243.85613651,55430,308.3953228],
+    [1615554000000,56435,55734,56436,55183,1491.00838938],
+    [1615550400000,56521,56435,56869,56248.82739558,183.76572076],
+    [1615546800000,56769.4646076,56507.96157496,57094,56413,313.76806297],
+    [1615543200000,56540,56770,56927,55860,802.222184],
+    etc
 
-        if (hr > 12):
-            ender = "PM"
-            hr -= 12
-        elif (hr == 12):
-            ender = "PM"
-        else:
-            ender = "AM"
+    I assume that means time, open, close,high, low, volume
+    '''
 
-        if (minute < 10):
-            print("Last Update: " + str(hr) + ":0" + str(lasttime.tm_min) + " " + ender)
-        else:
-            print("Last Update: " + str(hr) + ":" + str(lasttime.tm_min) + " " + ender)
-print ("Done")
+    #Print data to file
+    filename="xxx"+k+".txt"
+    try:
+        my_data_file = open(filename, 'a')
+    #    findlastentre = my_data_file.read()   
+    
+    #do something with this later to know when to append the update
+        startpoint = 117  #later on we will figure out the starpoint
+    except IOError:
+        my_data_file = open(filename, 'w')
+        startpoint = 0
+  
+ 
+    '''
+    Ian's Notes: this next sextion uses a "start point" and "end point" for the file (I'm guessing so it can overwrite the file later on?
+    Honestly, I don't understand the logic of it, but I'm including it in here because I fixed the file output that E.A. wrote.
+    '''
+    #Print to file - oldest 1st    (eventually we will have it only print new data but reading last time stamp & only printing after)
+    for i in range(startpoint,120):
+    # don't really need these anymore but here they are for referance:
+    #    TIME = jtxt[119-i][0]
+    #    OPEN = jtxt[119-i][1]
+    #    CLOSE = jtxt[119-i][2]
+    #    HIGH = jtxt[119-i][3]
+    #    LOW = jtxt[119-i][4]
+    #    VOLUME = jtxt[119-i][5]
+       my_data_file.write( "\n"+str(jtxt[119-i][0]) 
+              +"\t"+str(jtxt[119-i][1])
+              +"\t"+str(jtxt[119-i][3])
+              +"\t"+str(jtxt[119-i][4])
+              +"\t"+str(jtxt[119-i][2])
+              +"\t"+str(jtxt[119-i][5])
+        )
+
+    my_data_file.close()
+    
+#END OF PROGRAM
