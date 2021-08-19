@@ -1,38 +1,55 @@
 '''
 This program grabs data from bitfinex's ticker, displays the data, and refreshes every minute.
 Written by Ian Schwartz
+'''
+import os
+import sys
+import json
+import time
+import requests
 
-gui option: http://atlastk.org/api
-NOTE: The GUI also needs installing (pip install atlastk)
+'''
+NOTE: As is, this program uses the public API. For actual trading, it would
+need to use the Authenticated API, which is beyond the scope of this program.
 '''
 
-import requests #needs manual install (pip install requests)
-import time
-import json
-
-url = "https://api.bitfinex.com/v1/pubticker/btcusd" #This MAY need moving in the future, but for right now, this is all we're concerned with (BTC to USD)
+url = "https://api.bitfinex.com/v2/ticker/tBTCUSD/"
 
 response = requests.request("GET", url) #Get the data
 txt = response.text #We're only interested in the text area of the response (returns as string type)
-'''
-Format: '{"mid":"11831.5","bid":"11831.0","ask":"11832.0","last_price":"11834.0",
-"low":"11038.0","high":"12065.0","volume":"21643.99217458751402","timestamp":"1562250150.539342"}'
-'''
 jtxt = json.loads(txt) #convert into an array of strings
+
 '''
-Format: {'mid': '11831.5', 'bid': '11831.0', 'ask': '11832.0', 'last_price': '11834.0', 
-'low': '11038.0', 'high': '12065.0', 'volume': '21643.99217458751402', 'timestamp': '1562250150.539342'}
+jtxt now looks like:
+[47527, 9.49607463, 47528, 16.426778170000002, -661, -0.0137, 47528, 10274.45975602, 48583, 45851.95356552]
+
+According to the documentation, it goes:
+BID, BID_SIZE, ASK, ASK_SIZE, DAILY_CHANGE, DAILY_CHANGE_RELATIVE, LAST_PRICE, VOLUME, HIGH, LOW
 '''
 
-#For now, we'll print to the console, later to a GUI
-print("Current Data of BTC to USD\n\nLow:\t\t" + jtxt['low'] + 
-    "\nMid:\t\t" + jtxt['mid'] +
-    "\nHigh:\t\t" + jtxt['high'] +
-    "\nLast Price:\t" + jtxt['last_price'] +
-    "\nBid:\t\t" + jtxt['bid'] +
-    "\nAsk:\t\t" + jtxt['ask'] +
-    "\nVolume:\t\t" + jtxt['volume'] +
-    "\nTimestamp:\t" + jtxt['timestamp'] +
+BID = jtxt[0]
+BID_SIZE = jtxt[1]
+ASK = jtxt[2]
+ASK_SIZE = jtxt[3]
+DAILY_CHANGE = jtxt[4]
+DAILY_CHANGE_RELATIVE = jtxt[5]
+LAST_PRICE = jtxt[6]
+VOLUME = jtxt[7]
+HIGH = jtxt[8]
+LOW = jtxt[9]
+
+#Print the initial data to console
+print("Current Data of BTC to USD\n" +
+    "\nBid:\t\t\t" + str(BID) + 
+    "\nBid Size:\t\t" + str(BID_SIZE) +
+    "\nAsk:\t\t\t" + str(ASK) +
+    "\nAsk Size:\t\t" + str(ASK_SIZE) +
+    "\nDaily Change:\t\t" + str(DAILY_CHANGE) + 
+    "\nDaily Change Relative:\t" + str(DAILY_CHANGE_RELATIVE) + 
+    "\nLast Price:\t\t" + str(LAST_PRICE) +
+    "\nVolume:\t\t\t" + str(VOLUME) + 
+    "\nHigh:\t\t\t" + str(HIGH) + 
+    "\nLow:\t\t\t" + str(LOW) + 
     "\n"
     )
 
@@ -66,14 +83,29 @@ while True:
         txt = response.text
         jtxt = json.loads(txt)
         
-        print("\nCurrent Data of BTC to USD\n\nLow:\t\t" + jtxt['low'] + 
-            "\nMid:\t\t" + jtxt['mid'] +
-            "\nHigh:\t\t" + jtxt['high'] +
-            "\nLast Price:\t" + jtxt['last_price'] +
-            "\nBid:\t\t" + jtxt['bid'] +
-            "\nAsk:\t\t" + jtxt['ask'] +
-            "\nVolume:\t\t" + jtxt['volume'] +
-            "\nTimestamp:\t" + jtxt['timestamp'] +
+        BID = jtxt[0]
+        BID_SIZE = jtxt[1]
+        ASK = jtxt[2]
+        ASK_SIZE = jtxt[3]
+        DAILY_CHANGE = jtxt[4]
+        DAILY_CHANGE_RELATIVE = jtxt[5]
+        LAST_PRICE = jtxt[6]
+        VOLUME = jtxt[7]
+        HIGH = jtxt[8]
+        LOW = jtxt[9]
+
+        #Print the initial data to console
+        print("Current Data of BTC to USD\n" +
+            "\nBid:\t\t\t" + str(BID) + 
+            "\nBid Size:\t\t" + str(BID_SIZE) +
+            "\nAsk:\t\t\t" + str(ASK) +
+            "\nAsk Size:\t\t" + str(ASK_SIZE) +
+            "\nDaily Change:\t\t" + str(DAILY_CHANGE) + 
+            "\nDaily Change Relative:\t" + str(DAILY_CHANGE_RELATIVE) + 
+            "\nLast Price:\t\t" + str(LAST_PRICE) +
+            "\nVolume:\t\t\t" + str(VOLUME) + 
+            "\nHigh:\t\t\t" + str(HIGH) + 
+            "\nLow:\t\t\t" + str(LOW) + 
             "\n"
             )
         
